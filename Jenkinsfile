@@ -1,22 +1,21 @@
 node {
-    docker.image('node:18.17.1-buster-slim').withRun('-p 3000:3000') {
+    try {
+        stage('Checkout SCM') {
+            checkout scm
+        }
+        
         stage('Build') {
-            try {
-                checkout scm
+            def dockerImage = 'node:18.17.1-buster-slim'
+            def container = docker.image(dockerImage).withRun('-p 3000:3000') {
                 sh 'npm install'
-            } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-                throw e
             }
         }
-
+        
         stage('Test') {
-            try {
-                sh './jenkins/scripts/test.sh'
-            } catch (Exception e) {
-                currentBuild.result = 'FAILURE'
-                throw e
-            }
+            sh './jenkins/scripts/test.sh'
         }
+    } catch (Exception e) {
+        currentBuild.result = 'FAILURE'
+        throw e
     }
 }
