@@ -19,10 +19,20 @@ node {
             }
         }
 
+        stage('Manual Approval') {
+                    try {
+                        checkout scm
+                        input message: 'Lanjutkan ke tahap Deploy?'
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        throw e
+                    }
+                }
+
         stage('Deploy') {
             try {
                 sh './jenkins/scripts/deliver.sh'
-                input message: 'Sudah selesai menggunakan React App? (Klik "Proceed" untuk mengakhiri)'
+                sleep time: 60, unit: 'SECONDS'
                 sh './jenkins/scripts/kill.sh'
             } catch (Exception e) {
                 currentBuild.result = 'FAILURE'
